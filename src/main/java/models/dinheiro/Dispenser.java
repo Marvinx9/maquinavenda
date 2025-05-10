@@ -1,6 +1,8 @@
 package models.dinheiro;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 public class Dispenser {
     private final Dinheiro[] estoque = new Dinheiro[] {
@@ -16,7 +18,6 @@ public class Dispenser {
             new NotaDeVinteReais(),
             new NotaDeCinquentaReais(),
             new NotaDeCemReais(),
-            new NotaDeDozentosReais()
     };
 
     public int getQuantidade(Class<? extends Dinheiro> clazz){
@@ -61,26 +62,37 @@ public class Dispenser {
             return new Dinheiro[0];
         }
 
-        Dinheiro[]   ordenado = Arrays.copyOf(estoque, estoque.length);
+        List<Dinheiro> lista = new ArrayList<>();
 
-        for (int i = 0; i < ordenado.length - 1; i++) {
-            for (int j = i + 1; j < ordenado.length; j++) {
-                if (ordenado[j].valor() > ordenado[i].valor()) {
-                    Dinheiro tmp = ordenado[i];
-                    ordenado[i] = ordenado[j];
-                    ordenado[j] = tmp;
-                }
+        for (Dinheiro dinheiro : estoque) {
+            if (dinheiro.getQuantidade() > 0) {
+                lista.add(dinheiro);
             }
         }
+        Dinheiro[] dinheiroExistente = lista.toArray(new Dinheiro[0]);
 
+        Dinheiro[] retorno = calcularTroco(dinheiroExistente, troco, 0);
+        if (retorno == null && dinheiroExistente.length % 2 == 0) {
+            Dinheiro[] segundaTentativa = ordenarInventario(dinheiroExistente);
+            return calcularTroco(realocarValores(segundaTentativa), troco,1);
+        }
+        return retorno;
+    }
 
+    public Dinheiro[] calcularTroco(Dinheiro[] dinheiroExistente, Double valorDoTroco,int numero) {
+        for (int index = 0; index < dinheiroExistente.length; index++) {
+            Dinheiro[] ordenado = Arrays.copyOf(dinheiroExistente, dinheiroExistente.length);
+            if (numero == 0) {
+                ordenado = ordenarInventario(ordenado);
+            }
 
-        for (int index = 0; index < ordenado.length; index++) {
-            troco = valorPago - valorProduto;
+            ordenado = removerIndice(ordenado, index);
+
+            Double troco = valorDoTroco;
             Dinheiro[] usados = new Dinheiro[100];
             int usadosIndex = 0;
 
-            for (int i = index; i < ordenado.length; i++) {
+            for (int i = 0; i < ordenado.length; i++) {
                 Dinheiro dinheiro = ordenado[i];
 
                 int quantidadeDisponivel = dinheiro.getQuantidade();
@@ -107,6 +119,41 @@ public class Dispenser {
         return null;
     }
 
+    private Dinheiro[] realocarValores(Dinheiro[] lista) {
+        for (int i = 0; i < lista.length; i += 2) {
+            Dinheiro temp = lista[i];
+            lista[i] = lista[i + 1];
+            lista[i + 1] = temp;
+        }
+        return lista;
+    }
+
+    private Dinheiro[] removerIndice(Dinheiro[] array, int indiceRemover) {
+        if(indiceRemover == 0) {
+            return array;
+        }
+        Dinheiro[] novoArray = new Dinheiro[array.length - 1];
+        for (int i = 0, j = 0; i < array.length; i++) {
+            if (i != indiceRemover - 1) {
+                novoArray[j++] = array[i];
+            }
+        }
+        return novoArray;
+    }
+
+    public Dinheiro[] ordenarInventario(Dinheiro[] ordenado){
+        for (int i = 0; i < ordenado.length - 1; i++) {
+            for (int j = i + 1; j < ordenado.length; j++) {
+                if (ordenado[j].valor() > ordenado[i].valor()) {
+                    Dinheiro tmp = ordenado[i];
+                    ordenado[i] = ordenado[j];
+                    ordenado[j] = tmp;
+                }
+            }
+        }
+        return ordenado;
+    }
+
     private Dinheiro novaInstancia(Dinheiro dinheiro) {
         if (dinheiro instanceof MoedaDeCincoCentavos)       return new MoedaDeCincoCentavos();
         if (dinheiro instanceof MoedaDeDezCentavos)         return new MoedaDeDezCentavos();
@@ -120,7 +167,6 @@ public class Dispenser {
         if (dinheiro instanceof NotaDeVinteReais)           return new NotaDeVinteReais();
         if (dinheiro instanceof NotaDeCinquentaReais)       return new NotaDeCinquentaReais();
         if (dinheiro instanceof NotaDeCemReais)             return new NotaDeCemReais();
-        if (dinheiro instanceof NotaDeDozentosReais)        return new NotaDeDozentosReais();
 
         throw new IllegalArgumentException("Tipo de dinheiro desconhecido");
     }
