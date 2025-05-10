@@ -139,4 +139,40 @@ public class DispenserTest {
         Dinheiro[] troco = dispenser.trocoPara(10.00, 8.00);
         assertNull(troco);
     }
+
+    @Test
+    public void deveRetornarTrocoCorretamente() {
+        dispenser.zerarEstoque();
+        dispenser.definirEstoque(NotaDeCincoReais.class, 1);
+        dispenser.definirEstoque(NotaDeDoisReais.class, 8);
+        Dinheiro[] troco = dispenser.trocoPara(10.00, 4.00);
+        double total = 0.0;
+        for (Dinheiro d : troco) total += d.valor();
+        assertEquals(6.00 ,total, 0.0001);
+    }
+
+    @Test
+    public void deveRetornarTrocoCentavosCorretamente() {
+        dispenser.zerarEstoque();
+        dispenser.definirEstoque(NotaDeCincoReais.class, 1);
+        dispenser.definirEstoque(NotaDeDoisReais.class, 8);
+        dispenser.definirEstoque(MoedaDeCinquentaCentavos.class, 5);
+        Dinheiro[] troco = dispenser.trocoPara(10.00, 9.50);
+        double total = 0.0;
+        for (Dinheiro d : troco) total += d.valor();
+        assertEquals(0.50 ,total, 0.0001);
+    }
+
+    @Test
+    public void deveRetornarOTrocoCorretamente() {
+        dispenser.zerarEstoque();
+        dispenser.definirEstoque(NotaDeCemReais.class, 1);
+        dispenser.definirEstoque(NotaDeCincoReais.class, 1);
+        dispenser.definirEstoque(NotaDeDoisReais.class, 1);
+
+        Dinheiro[] troco = dispenser.trocoPara(110, 8.0);
+        double total = 0.0;
+        for (Dinheiro d : troco) total += d.valor();
+        assertEquals(102.0 ,total, 0.0001);
+    }
 }

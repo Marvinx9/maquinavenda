@@ -61,7 +61,7 @@ public class Dispenser {
             return new Dinheiro[0];
         }
 
-        Dinheiro[] ordenado = Arrays.copyOf(estoque, estoque.length);
+        Dinheiro[]   ordenado = Arrays.copyOf(estoque, estoque.length);
 
         for (int i = 0; i < ordenado.length - 1; i++) {
             for (int j = i + 1; j < ordenado.length; j++) {
@@ -73,32 +73,37 @@ public class Dispenser {
             }
         }
 
-        Dinheiro[] usados = new Dinheiro[100];
-        int usadosIndex = 0;
 
-        for (int i = 0; i < ordenado.length; i++) {
-            Dinheiro dinheiro = ordenado[i];
 
-            int quantidadeDisponivel = dinheiro.getQuantidade();
+        for (int index = 0; index < ordenado.length; index++) {
+            troco = valorPago - valorProduto;
+            Dinheiro[] usados = new Dinheiro[100];
+            int usadosIndex = 0;
 
-            if (dinheiro.getQuantidade() == 0) {
-                continue;
-            }
-            while (troco + 1e-6 >= dinheiro.valor() && quantidadeDisponivel > 0) {
-                if (usadosIndex == usados.length) {
-                    return null;
+            for (int i = index; i < ordenado.length; i++) {
+                Dinheiro dinheiro = ordenado[i];
+
+                int quantidadeDisponivel = dinheiro.getQuantidade();
+
+                if (dinheiro.getQuantidade() == 0) {
+                    continue;
                 }
-                troco = (double) Math.round((troco - dinheiro.valor()) * 100.0) / 100;
 
-                usados[usadosIndex++] = novaInstancia(dinheiro);
-                quantidadeDisponivel --;
+                while (troco + 1e-6 >= dinheiro.valor() && quantidadeDisponivel > 0) {
+                    if (usadosIndex == usados.length) {
+                        return null;
+                    }
+                    troco = (double) Math.round((troco - dinheiro.valor()) * 100.0) / 100;
 
-                if (troco == 0.0) {
-                    return Arrays.copyOf(usados, usadosIndex);
+                    usados[usadosIndex++] = novaInstancia(dinheiro);
+                    quantidadeDisponivel--;
+
+                    if (troco == 0.0) {
+                        return Arrays.copyOf(usados, usadosIndex);
+                    }
                 }
             }
         }
-
         return null;
     }
 
